@@ -142,6 +142,8 @@ int main()
     // Flag Screen
     int dataOnScreen = 0;
 
+    char mensagem[35];
+
 restart:
 
     while (true)
@@ -176,22 +178,22 @@ restart:
                 switch (dataOnScreen)
             {
             case 0:
-                ssd1306_draw_string(ssd, 0, 0, "Umidade: ");
-                ssd1306_draw_int(ssd, 90, 0, umidade);
+                sprintf(mensagem, "Umidade: %d", umidade);
+                ssd1306_draw_string(ssd, 0, 0, mensagem);  
                 render_on_display(ssd, &frame_area);
 
                 break;
             case 1:
-                ssd1306_draw_string(ssd, 0, 0, "Temperatura: ");
-                ssd1306_draw_int(ssd, 90, 0, temperatura);
+                sprintf(mensagem, "Temperatura: %d", temperatura);
+                ssd1306_draw_string(ssd, 0, 0, mensagem);
                 render_on_display(ssd, &frame_area);
 
                 break;
             case 2:
-                ssd1306_draw_string(ssd, 0, 0, "Umidade: ");
-                ssd1306_draw_int(ssd, 90, 0, umidade);
-                ssd1306_draw_string(ssd, 0, 16, "Temperatura: ");
-                ssd1306_draw_int(ssd, 90, 16, temperatura);
+                sprintf(mensagem, "Umidade: %d", umidade);
+                ssd1306_draw_string(ssd, 0, 0, mensagem);
+                sprintf(mensagem, "Temperatura: %d", temperatura);
+                ssd1306_draw_string(ssd, 0, 16, mensagem);
                 render_on_display(ssd, &frame_area);
 
             default:
