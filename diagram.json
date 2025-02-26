@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "author": "Reinan Lopes Argolo",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-pi-pico", "id": "pico", "top": 140.85, "left": 22.8, "attrs": {} },
+    {
+      "type": "wokwi-analog-joystick",
+      "id": "joystick1",
+      "top": 47.4,
+      "left": 130.2,
+      "attrs": {}
+    },
+    { "type": "board-ssd1306", "id": "oled1", "top": 367.94, "left": -76.57, "attrs": {} },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btnA",
+      "top": 111.8,
+      "left": -192,
+      "attrs": { "color": "blue" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btnB",
+      "top": 111.8,
+      "left": -76.8,
+      "attrs": { "color": "green" }
+    },
+    {
+      "type": "wokwi-buzzer",
+      "id": "bz1",
+      "top": 213.6,
+      "left": 213,
+      "attrs": { "volume": "0.1" }
+    }
+  ],
+  "connections": [
+    [ "oled1:SCL", "pico:GP15", "green", [ "v0" ] ],
+    [ "oled1:GND", "pico:GND.7", "black", [ "v-9.6", "h153.6", "v-182.4" ] ],
+    [ "oled1:VCC", "pico:3V3", "red", [ "v-19.2", "h153.75", "v-201.6" ] ],
+    [ "oled1:SDA", "pico:GP14", "gold", [ "v0" ] ],
+    [ "joystick1:VERT", "pico:GP27", "green", [ "v0" ] ],
+    [ "joystick1:HORZ", "pico:GP26", "green", [ "v0" ] ],
+    [ "joystick1:VCC", "pico:3V3", "red", [ "v0" ] ],
+    [ "joystick1:GND", "pico:GND.8", "black", [ "v0" ] ],
+    [ "btnA:1.l", "pico:GND.2", "red", [ "h-9.6", "v67.2" ] ],
+    [ "btnB:1.l", "pico:GND.2", "red", [ "h-19.2", "v96", "h9.6" ] ],
+    [ "btnA:1.r", "pico:GND.2", "red", [ "v0", "h9.8", "v96" ] ],
+    [ "btnA:2.l", "pico:GP5", "green", [ "h0", "v67.4" ] ],
+    [ "btnA:2.r", "pico:GP5", "green", [ "h0.2", "v67.4" ] ],
+    [ "btnB:1.r", "pico:GND.2", "red", [ "v0", "h9.8", "v96" ] ],
+    [ "btnB:2.l", "pico:GP6", "green", [ "h-9.6", "v86.6" ] ],
+    [ "btnB:2.r", "pico:GP6", "green", [ "h0.2", "v86.6" ] ],
+    [ "joystick1:SEL", "pico:GP22", "green", [ "v0" ] ],
+    [ "bz1:2", "pico:GP21", "green", [ "v9.6", "h-38.8", "v-57.6" ] ],
+    [ "pico:GND.5", "bz1:1", "black", [ "h0" ] ]
+  ],
+  "dependencies": {}
+}
