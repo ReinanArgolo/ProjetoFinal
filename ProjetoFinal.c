@@ -7,17 +7,26 @@
 #include "inc/ssd1306.h"
 #include "hardware/i2c.h"
 #include "hardware/adc.h"
+#include "pico/multicore.h"
+#include <stdbool.h>
+
 
 // Imprta arquivos de função
 #include "functions/convert.h"
 
+// Define as portas dos perifericos
+#define BNT1_PIN 5
 #define JOY_Y_PIN 27
 #define JOY_X_PIN 26
 #define SW_PIN 22
 #define BUZZER_PIN 21
+#define LED_BLUE_PIN 12
+#define LED_RED_PIN 13
+#define LED_GREEN_PIN 11
 
 const uint I2C_SDA = 14;
 const uint I2C_SCL = 15;
+
 
 // New functions for buzzer audio
 void play_tone(unsigned int frequency, unsigned int duration_ms) {
@@ -36,32 +45,32 @@ void playBlindingLights() {
     // Notas corrigidas com tempos ajustados
     int melody[][2] = {
         {440, 300}, // A4
-        {440, 300}, // A4
-        {392, 150}, // G4
-        {440, 300}, // A4
-        {494, 400}, // B4
-        {330, 200}, // E4
-        {392, 250}, // G4
-        {330, 250}, // E4
-        {440, 300}, // A4
-        {440, 300}, // A4
-        {392, 150}, // G4
-        {440, 300}, // A4
-        {494, 400}, // B4
-        {330, 200}, // E4
-        {392, 250}, // G4
+        // {440, 300}, // A4
+        // {392, 150}, // G4
+        // {440, 300}, // A4
+        // {494, 400}, // B4
+        // {330, 200}, // E4
+        // {392, 250}, // G4
+        // {330, 250}, // E4
+        // {440, 300}, // A4
+        // {440, 300}, // A4
+        // {392, 150}, // G4
+        // {440, 300}, // A4
+        // {494, 400}, // B4
+        // {330, 200}, // E4
+        // {392, 250}, // G4
 
-        // Continuação conforme imagem (DBAG DBAGA) com tempos ajustados
-        {293, 300}, // D4
-        {247, 200}, // B3
-        {220, 300}, // A3
-        {196, 300}, // G3
+        // // Continuação conforme imagem (DBAG DBAGA) com tempos ajustados
+        // {293, 300}, // D4
+        // {247, 200}, // B3
+        // {220, 300}, // A3
+        // {196, 300}, // G3
         
-        {293, 300}, // D4
-        {247, 200}, // B3
-        {220, 300}, // A3
-        {196, 250}, // G3
-        {220, 350}, // A3 (última nota um pouco mais longa)
+        // {293, 300}, // D4
+        // {247, 200}, // B3
+        // {220, 300}, // A3
+        // {196, 250}, // G3
+        // {220, 350}, // A3 (última nota um pouco mais longa)
     };
     
     int length = sizeof(melody) / sizeof(melody[0]);
@@ -71,13 +80,23 @@ void playBlindingLights() {
     }
 }
 
-
+void limparDisplay(uint8_t *ssd, struct render_area *area) {
+    memset(ssd, 0, ssd1306_buffer_length);
+    render_on_display(ssd, area);
+}
 
 
 int main()
 {
     stdio_init_all();
     adc_init();
+
+    gpio_init(LED_BLUE_PIN);
+    gpio_init(LED_RED_PIN);
+    gpio_init(LED_GREEN_PIN);
+    gpio_set_dir(LED_BLUE_PIN, GPIO_OUT);
+    gpio_set_dir(LED_RED_PIN, GPIO_OUT);
+    gpio_set_dir(LED_GREEN_PIN, GPIO_OUT);
 
     // Inicialização do i2c
     i2c_init(i2c1, ssd1306_i2c_clock * 1000);
@@ -111,8 +130,17 @@ int main()
     gpio_init(BUZZER_PIN);
     gpio_set_dir(BUZZER_PIN, GPIO_OUT);
 
-    // Play "Blinding Lights" melody
-    playBlindingLights();
+    // Show On screen 
+    ssd1306_draw_string(ssd, 10, 32, "Projeto Final");
+    render_on_display(ssd, &frame_area);
+
+    sleep_ms(200);
+
+    memset(ssd, 0, ssd1306_buffer_length);
+    render_on_display(ssd, &frame_area);
+
+    // Flag Screen
+    int dataOnScreen = 0;
 
 restart:
 
@@ -125,17 +153,72 @@ restart:
 
         // Changed from converterDadosADC to converterJoyToUmid
         int umidade = converterJoyToUmid(x);
+        int temperatura = converterJoyToCelsius(y);
 
-        printf("Umidade: %d\n", umidade);
 
-        // printf("x: %d, y: %d\n", x, y);
-        if (x > 2048) {
-            ssd1306_draw_string(ssd, 0, 0, "Projeto Final");
-            render_on_display(ssd, &frame_area);
+        gpio_init(BNT1_PIN);
+        gpio_set_dir(BNT1_PIN, GPIO_IN);
+        gpio_pull_up(BNT1_PIN);
 
-            playBlindingLights();
-            
+        static uint32_t last_press_time = 0;
+        uint32_t current_time = to_ms_since_boot(get_absolute_time());
+
+        if (gpio_get(BNT1_PIN) == 0 && (current_time - last_press_time) > 200)
+        {
+            last_press_time = current_time;
+            dataOnScreen++;
+            limparDisplay(ssd, &frame_area);
+            if (dataOnScreen > 2)
+            {
+            dataOnScreen = 0;
+            }
+
+                switch (dataOnScreen)
+            {
+            case 0:
+                ssd1306_draw_string(ssd, 0, 0, "Umidade: ");
+                ssd1306_draw_int(ssd, 90, 0, umidade);
+                render_on_display(ssd, &frame_area);
+
+                break;
+            case 1:
+                ssd1306_draw_string(ssd, 0, 0, "Temperatura: ");
+                ssd1306_draw_int(ssd, 90, 0, temperatura);
+                render_on_display(ssd, &frame_area);
+
+                break;
+            case 2:
+                ssd1306_draw_string(ssd, 0, 0, "Umidade: ");
+                ssd1306_draw_int(ssd, 90, 0, umidade);
+                ssd1306_draw_string(ssd, 0, 16, "Temperatura: ");
+                ssd1306_draw_int(ssd, 90, 16, temperatura);
+                render_on_display(ssd, &frame_area);
+
+            default:
+                break;
+            }
         }
+        
+        if(temperatura > 48 || umidade > 100){
+            ssd1306_draw_string(ssd, 0, 5, "PERIGO");
+            ssd1306_draw_string(ssd, 0, 10, "ATIVANDO CONTROLES");
+            ssd1306_draw_string(ssd, 0, 25, "UMIDADE: ");
+            ssd1306_draw_int(ssd, 60, 25, umidade);
+            ssd1306_draw_string(ssd, 0, 35, "TEMPERATURA: ");
+            ssd1306_draw_int(ssd, 90, 35, temperatura);
+            render_on_display(ssd, &frame_area);
+            sleep_ms(200);
+           for(int i = 0; i < 3; i++) {
+            playBlindingLights();
+            gpio_put(LED_RED_PIN, !gpio_get(LED_RED_PIN));
+            sleep_ms(200);
+           }
+           gpio_put(LED_RED_PIN, 0);
+
+
+
+        }
+        
         sleep_ms(10);
 
     }

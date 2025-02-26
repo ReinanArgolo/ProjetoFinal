@@ -174,6 +174,13 @@ void ssd1306_draw_string(uint8_t *ssd, int16_t x, int16_t y, char *string) {
     }
 }
 
+// Desenha um inteiro no display
+void ssd1306_draw_int(uint8_t *ssd, int16_t x, int16_t y, int number) {
+    char buffer[12];
+    sprintf(buffer, "%d", number);
+    ssd1306_draw_string(ssd, x, y, buffer);
+}
+
 // Comando de configuração com base na estrutura ssd1306_t
 void ssd1306_command(ssd1306_t *ssd, uint8_t command) {
   ssd->port_buffer[1] = command;

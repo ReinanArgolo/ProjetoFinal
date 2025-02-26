@@ -58,6 +58,7 @@ target_include_directories(ProjetoFinal PRIVATE
 target_link_libraries(ProjetoFinal 
         hardware_i2c
         hardware_adc
+        
         )
 
 pico_add_extra_outputs(ProjetoFinal)

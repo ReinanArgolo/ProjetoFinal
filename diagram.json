@@ -32,6 +32,20 @@
       "top": 213.6,
       "left": 213,
       "attrs": { "volume": "0.1" }
+    },
+    {
+      "type": "wokwi-rgb-led",
+      "id": "rgb1",
+      "top": 224.8,
+      "left": -162.1,
+      "attrs": { "common": "cathode" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": 330.35,
+      "left": -115.2,
+      "attrs": { "value": "1000" }
     }
   ],
   "connections": [
@@ -53,7 +67,12 @@
     [ "btnB:2.r", "pico:GP6", "green", [ "h0.2", "v86.6" ] ],
     [ "joystick1:SEL", "pico:GP22", "green", [ "v0" ] ],
     [ "bz1:2", "pico:GP21", "green", [ "v9.6", "h-38.8", "v-57.6" ] ],
-    [ "pico:GND.5", "bz1:1", "black", [ "h0" ] ]
+    [ "pico:GND.5", "bz1:1", "black", [ "h0" ] ],
+    [ "rgb1:R", "pico:GP13", "red", [ "v0" ] ],
+    [ "rgb1:G", "pico:GP11", "green", [ "v0" ] ],
+    [ "rgb1:B", "pico:GP12", "blue", [ "h67.2", "v-1.6" ] ],
+    [ "r1:2", "pico:GND.4", "black", [ "v0" ] ],
+    [ "rgb1:COM", "r1:1", "black", [ "v9.2", "h28.9", "v19.2" ] ]
   ],
   "dependencies": {}
 }
