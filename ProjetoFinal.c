@@ -70,6 +70,9 @@ int main()
     gpio_pull_up(I2C_SDA);
     gpio_pull_up(I2C_SCL);
 
+    // Processo de inicialização completo do OLED SSD1306
+    ssd1306_init();
+
     adc_gpio_init(JOY_X_PIN);
     adc_gpio_init(JOY_Y_PIN);
 
@@ -103,7 +106,18 @@ restart:
         int x = adc_read();
         adc_select_input(1);
         int y = adc_read();
-        printf("X: %d, Y: %d\n", x, y);
-        sleep_ms(100);
+
+        printf("x: %d, y: %d\n", x, y);
+        if (x > 2048) {
+            ssd1306_draw_string(ssd, 0, 0, "Projeto Final");
+            render_on_display(ssd, &frame_area);
+            
+            playBlindingLights();
+            
+        }
+        sleep_ms(10);
+
     }
+
+    return 0;
 }
