@@ -1,0 +1,1 @@
+int converterJoyToUmid(int valorADC);

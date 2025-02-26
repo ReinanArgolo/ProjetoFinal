@@ -35,7 +35,8 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(ProjetoFinal ProjetoFinal.c inc/ssd1306_i2c.c)
+add_executable(ProjetoFinal ProjetoFinal.c inc/ssd1306_i2c.c functions/convert.c)
+    
 
 pico_set_program_name(ProjetoFinal "ProjetoFinal")
 pico_set_program_version(ProjetoFinal "0.1")

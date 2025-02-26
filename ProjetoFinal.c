@@ -8,6 +8,9 @@
 #include "hardware/i2c.h"
 #include "hardware/adc.h"
 
+// Imprta arquivos de função
+#include "functions/convert.h"
+
 #define JOY_Y_PIN 27
 #define JOY_X_PIN 26
 #define SW_PIN 22
@@ -30,23 +33,35 @@ void play_tone(unsigned int frequency, unsigned int duration_ms) {
 }
 
 void playBlindingLights() {
-    // Notas corrigidas baseadas na imagem
+    // Notas corrigidas com tempos ajustados
     int melody[][2] = {
         {440, 300}, // A4
         {440, 300}, // A4
-        {392, 100}, // G4
-        {440, 200}, // A4
+        {392, 150}, // G4
+        {440, 300}, // A4
         {494, 400}, // B4
         {330, 200}, // E4
-        {392, 200}, // G4
+        {392, 250}, // G4
+        {330, 250}, // E4
+        {440, 300}, // A4
+        {440, 300}, // A4
+        {392, 150}, // G4
+        {440, 300}, // A4
+        {494, 400}, // B4
         {330, 200}, // E4
-        {440, 200}, // A4
-        {440, 200}, // A4
-        {392, 200}, // G4
-        {440, 200}, // A4
-        {494, 200}, // B4
-        {330, 200}, // E4
-        {392, 200}, // G4
+        {392, 250}, // G4
+
+        // Continuação conforme imagem (DBAG DBAGA) com tempos ajustados
+        {293, 300}, // D4
+        {247, 200}, // B3
+        {220, 300}, // A3
+        {196, 300}, // G3
+        
+        {293, 300}, // D4
+        {247, 200}, // B3
+        {220, 300}, // A3
+        {196, 250}, // G3
+        {220, 350}, // A3 (última nota um pouco mais longa)
     };
     
     int length = sizeof(melody) / sizeof(melody[0]);
@@ -55,6 +70,7 @@ void playBlindingLights() {
         sleep_ms(50); // Pequena pausa entre as notas
     }
 }
+
 
 
 
@@ -107,11 +123,16 @@ restart:
         adc_select_input(1);
         int y = adc_read();
 
-        printf("x: %d, y: %d\n", x, y);
+        // Changed from converterDadosADC to converterJoyToUmid
+        int umidade = converterJoyToUmid(x);
+
+        printf("Umidade: %d\n", umidade);
+
+        // printf("x: %d, y: %d\n", x, y);
         if (x > 2048) {
             ssd1306_draw_string(ssd, 0, 0, "Projeto Final");
             render_on_display(ssd, &frame_area);
-            
+
             playBlindingLights();
             
         }
