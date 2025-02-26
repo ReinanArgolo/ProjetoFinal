@@ -1,2 +1,2 @@
-int converterJoyToUmid(int valorADC);
-int converterJoyToCelsius(int valorADC);
+int converterJoyToUmid(int adc, int *umid);
+int converterJoyToCelsius(int adc, int *temp);

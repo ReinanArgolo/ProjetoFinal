@@ -44,7 +44,7 @@ void play_tone(unsigned int frequency, unsigned int duration_ms) {
 void playBlindingLights() {
     // Notas corrigidas com tempos ajustados
     int melody[][2] = {
-        {440, 300}, // A4
+        // {440, 300}, // A4
         // {440, 300}, // A4
         // {392, 150}, // G4
         // {440, 300}, // A4
@@ -61,16 +61,16 @@ void playBlindingLights() {
         // {392, 250}, // G4
 
         // // Continuação conforme imagem (DBAG DBAGA) com tempos ajustados
-        // {293, 300}, // D4
-        // {247, 200}, // B3
-        // {220, 300}, // A3
-        // {196, 300}, // G3
+        {293, 300}, // D4
+        {247, 200}, // B3
+        {220, 300}, // A3
+        {196, 300}, // G3
         
-        // {293, 300}, // D4
-        // {247, 200}, // B3
-        // {220, 300}, // A3
-        // {196, 250}, // G3
-        // {220, 350}, // A3 (última nota um pouco mais longa)
+        {293, 300}, // D4
+        {247, 200}, // B3
+        {220, 300}, // A3
+        {196, 250}, // G3
+        {220, 350}, // A3 (última nota um pouco mais longa)
     };
     
     int length = sizeof(melody) / sizeof(melody[0]);
@@ -85,6 +85,36 @@ void limparDisplay(uint8_t *ssd, struct render_area *area) {
     render_on_display(ssd, area);
 }
 
+void alerta(int umidade, int temperatura, uint8_t *ssd, struct render_area *frame_area) {
+
+    char mensagem[35];
+    memset(ssd, 0, ssd1306_buffer_length);
+    sprintf(mensagem, "PERIGO ATIVANDO CONTROLES");
+    ssd1306_draw_string(ssd, 0, 34, mensagem);
+    playBlindingLights();
+    render_on_display(ssd, frame_area);
+    gpio_put(LED_RED_PIN, 1);
+    sleep_ms(500);
+
+    gpio_put(LED_RED_PIN, 0);
+    memset(ssd, 0, ssd1306_buffer_length);
+    sprintf(mensagem, "UMIDADE: %d", umidade);
+    ssd1306_draw_string(ssd, 0, 34, mensagem);
+    render_on_display(ssd, frame_area);
+    gpio_put(LED_RED_PIN, 1);
+    playBlindingLights();
+
+    sleep_ms(500);
+    gpio_put(LED_RED_PIN, 0);
+    memset(ssd, 0, ssd1306_buffer_length);
+    sprintf(mensagem, "TEMPERATURA: %d", temperatura);
+    ssd1306_draw_string(ssd, 0, 34, mensagem);
+    render_on_display(ssd, frame_area);
+    gpio_put(LED_RED_PIN, 1);
+    playBlindingLights();
+
+    gpio_put(LED_RED_PIN, 0);
+}
 
 int main()
 {
@@ -144,6 +174,10 @@ int main()
 
     char mensagem[35];
 
+    // Changed from converterDadosADC to converterJoyToUmid
+    int umidade = 99;
+    int temperatura = 32;
+
 restart:
 
     while (true)
@@ -153,14 +187,18 @@ restart:
         adc_select_input(1);
         int y = adc_read();
 
-        // Changed from converterDadosADC to converterJoyToUmid
-        int umidade = converterJoyToUmid(x);
-        int temperatura = converterJoyToCelsius(y);
-
+        converterJoyToCelsius(x, &temperatura);
+        converterJoyToUmid(y, &umidade);
 
         gpio_init(BNT1_PIN);
         gpio_set_dir(BNT1_PIN, GPIO_IN);
         gpio_pull_up(BNT1_PIN);
+
+        sprintf(mensagem, "Umidade: %d", umidade);
+        ssd1306_draw_string(ssd, 0, 0, mensagem);
+        sprintf(mensagem, "Temperatura: %d", temperatura);
+        ssd1306_draw_string(ssd, 0, 16, mensagem);
+        render_on_display(ssd, &frame_area);
 
         static uint32_t last_press_time = 0;
         uint32_t current_time = to_ms_since_boot(get_absolute_time());
@@ -178,7 +216,7 @@ restart:
                 switch (dataOnScreen)
             {
             case 0:
-                sprintf(mensagem, "Umidade: %d", umidade);
+                sprintf(mensagem, "Umidade: %2d", umidade);
                 ssd1306_draw_string(ssd, 0, 0, mensagem);  
                 render_on_display(ssd, &frame_area);
 
@@ -201,22 +239,10 @@ restart:
             }
         }
         
-        if(temperatura > 48 || umidade > 100){
-            ssd1306_draw_string(ssd, 0, 5, "PERIGO");
-            ssd1306_draw_string(ssd, 0, 10, "ATIVANDO CONTROLES");
-            ssd1306_draw_string(ssd, 0, 25, "UMIDADE: ");
-            ssd1306_draw_int(ssd, 60, 25, umidade);
-            ssd1306_draw_string(ssd, 0, 35, "TEMPERATURA: ");
-            ssd1306_draw_int(ssd, 90, 35, temperatura);
-            render_on_display(ssd, &frame_area);
-            sleep_ms(200);
-           for(int i = 0; i < 3; i++) {
-            playBlindingLights();
-            gpio_put(LED_RED_PIN, !gpio_get(LED_RED_PIN));
-            sleep_ms(200);
-           }
-           gpio_put(LED_RED_PIN, 0);
-
+        if(temperatura > 45 ||temperatura < 20 || umidade < 75){
+           
+            alerta(umidade, temperatura, ssd, &frame_area);
+            goto restart;
 
 
         }
